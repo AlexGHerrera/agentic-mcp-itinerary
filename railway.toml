@@ -1,8 +1,9 @@
 [build]
-builder = "nixpacks"
+builder = "RAILPACK"
 
 [deploy]
-startCommand = "PYTHONPATH=server /opt/venv/bin/python3 server/main.py"
+startCommand = "PYTHONPATH=server python server/main.py"
 healthcheckPath = "/health"
-healthcheckTimeout = 60
+healthcheckTimeout = 120
 restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

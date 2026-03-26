@@ -1,0 +1,10 @@
+[project]
+name = "agentic-mcp-itinerary"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.0.0",
+    "langgraph>=0.2.0",
+    "langchain-google-genai>=4.0.0",
+    "mcp>=1.0.0",
+]
