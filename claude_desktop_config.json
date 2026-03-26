@@ -1,10 +1,7 @@
 {
   "mcpServers": {
     "travel-agent": {
-      "url": "https://YOUR_RAILWAY_URL/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_MCP_API_KEY"
-      }
+      "url": "https://travel-agent-production-c1c4.up.railway.app/mcp"
     }
   }
 }

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import os
-import secrets
-
 from fastmcp import FastMCP
-from fastmcp.server.auth import AccessToken, AuthProvider
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from auth import SimpleOAuthProvider
 from agent import (
     confirm_itinerary_state,
     get_itinerary_state,
@@ -16,25 +14,8 @@ from agent import (
     run_refine,
 )
 
-class StaticBearerAuth(AuthProvider):
-    def __init__(self, token: str):
-        super().__init__()
-        self._token = token
-
-    async def verify_token(self, token: str) -> AccessToken | None:
-        if token != self._token:
-            return None
-        return AccessToken(
-            token=token,
-            client_id="travel-agent",
-            scopes=[],
-            resource=str(self._resource_url) if self._resource_url else None,
-        )
-
-
-api_key = os.getenv("MCP_API_KEY", secrets.token_urlsafe(32))
-auth = StaticBearerAuth(token=api_key)
-mcp = FastMCP("travel-agent", auth=auth)
+oauth = SimpleOAuthProvider()
+mcp = FastMCP("travel-agent", auth=oauth)
 
 
 @mcp.custom_route("/health", methods=["GET"])
