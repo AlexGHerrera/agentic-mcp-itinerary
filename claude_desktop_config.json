@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "travel-agent": {
+      "command": "python",
+      "args": ["/root/repos/agentic-mcp-itinerary/server/main.py"],
+      "env": {
+        "ANTHROPIC_API_KEY": "your-key-here"
+      }
+    }
+  }
+}
