@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import os
+import secrets
+
 from fastmcp import FastMCP
+from fastmcp.server.auth import AccessToken, AuthProvider
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from agent import (
     confirm_itinerary_state,
@@ -10,7 +16,30 @@ from agent import (
     run_refine,
 )
 
-mcp = FastMCP("travel-agent")
+class StaticBearerAuth(AuthProvider):
+    def __init__(self, token: str):
+        super().__init__()
+        self._token = token
+
+    async def verify_token(self, token: str) -> AccessToken | None:
+        if token != self._token:
+            return None
+        return AccessToken(
+            token=token,
+            client_id="travel-agent",
+            scopes=[],
+            resource=str(self._resource_url) if self._resource_url else None,
+        )
+
+
+api_key = os.getenv("MCP_API_KEY", secrets.token_urlsafe(32))
+auth = StaticBearerAuth(token=api_key)
+mcp = FastMCP("travel-agent", auth=auth)
+
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request):
+    return JSONResponse({"status": "ok", "server": "travel-agent"})
 
 
 @mcp.tool(
@@ -68,4 +97,5 @@ Formato de respuesta tras cada tool call:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    port = int(os.getenv("PORT", 8000))
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=port)

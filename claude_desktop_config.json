@@ -1,10 +1,9 @@
 {
   "mcpServers": {
     "travel-agent": {
-      "command": "python",
-      "args": ["/root/repos/agentic-mcp-itinerary/server/main.py"],
-      "env": {
-        "ANTHROPIC_API_KEY": "your-key-here"
+      "url": "https://YOUR_RAILWAY_URL/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_API_KEY"
       }
     }
   }

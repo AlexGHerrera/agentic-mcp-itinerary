@@ -45,6 +45,14 @@ El estado persistente se guarda en `storage/checkpoints.db`.
 2. Asegura `ANTHROPIC_API_KEY` en el bloque `env`.
 3. Reinicia Claude Desktop y habilita el MCP server `travel-agent`.
 
+## Deploy en Railway
+
+1. Crea un nuevo servicio y apunta el repo.
+2. Configura las variables de entorno requeridas:
+   - `GEMINI_API_KEY`
+   - `MCP_API_KEY`
+3. El servicio expone `/health` para checks y usa `PORT` inyectado por Railway.
+
 ## Notas de PoC
 
 - El agente interno usa el modelo `claude-3-5-haiku-20241022`.
