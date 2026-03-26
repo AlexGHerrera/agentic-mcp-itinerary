@@ -410,29 +410,98 @@ def format_response(state: Dict[str, Any]) -> Dict[str, Any]:
             names = "Tiempo libre"
         day_lines.append(f"**{title}**: {names}")
 
+    # --- Flights table ---
+    if selected_flight:
+        stops_label = f"{selected_flight.get('stops', 0)} escala(s)"
+        flight_rows = (
+            f"| {selected_flight.get('origin', '?')} → {selected_flight.get('destination', '?')} "
+            f"| {selected_flight.get('airline', '?')} "
+            f"| {selected_flight.get('flight_id', '?')} "
+            f"| {selected_flight.get('departure', '?')} "
+            f"| {selected_flight.get('arrival', '?')} "
+            f"| {flight_total:.2f}€ |"
+        )
+    else:
+        flight_rows = "| — | — | — | — | — | — |"
+
+    # --- Hotel block ---
+    if selected_hotel:
+        hotel_block = (
+            f"**{selected_hotel.get('name', '?')}** | "
+            f"{'⭐' * int(selected_hotel.get('stars', 0))} {selected_hotel.get('stars', '?')} estrellas\n"
+            f"**Noches:** {nights} | "
+            f"**Precio:** {selected_hotel.get('price_per_night', 0):.2f}€/noche → "
+            f"**Total:** {hotel_total:.2f}€"
+        )
+    else:
+        hotel_block = "Por definir"
+
+    # --- Day by day ---
+    day_sections = []
+    for idx in range(max(days, len(daily_activities))):
+        date_label = ""
+        if start_date:
+            try:
+                date_label = (date.fromisoformat(start_date) + timedelta(days=idx)).isoformat()
+            except ValueError:
+                date_label = ""
+        header = f"**Día {idx + 1}{' — ' + date_label if date_label else ''} ({destination})**"
+        daily = daily_activities[idx] if idx < len(daily_activities) else []
+        if daily:
+            act_lines = "\n".join(
+                f"- {act.get('name', 'Actividad')} ({act.get('price', 0):.0f}€)"
+                for act in daily
+            )
+        else:
+            act_lines = "- Tiempo libre (0€)"
+        day_sections.append(f"{header}\n{act_lines}")
+
+    # --- Budget row ---
+    budget = float(state.get("budget", 0.0))
+    budget_row = f"| Presupuesto disponible | {budget:.2f}€ |" if budget > 0 else ""
+    diff = budget - total_cost if budget > 0 else None
+    diff_row = f"| **Diferencia** | **{'+' if diff and diff >= 0 else ''}{diff:.2f}€** |" if diff is not None else ""
+
+    # --- itinerary_id ---
+    itinerary_id = state.get("itinerary_id", "")
+    id_block = f"\n### 🔖 ID de reserva\n`itinerary_id: {itinerary_id}`" if itinerary_id else ""
+
     draft_sections = [
-        f"## Itinerario: {destination} ({days} días)",
+        f"## ✈️ Itinerario: {destination} ({days} días)",
         "",
-        flight_line,
-        hotel_line,
+        "### ✈️ VUELOS",
+        "| Tramo | Compañía | Vuelo | Salida | Llegada | Precio |",
+        "|-------|----------|-------|--------|---------|--------|",
+        flight_rows,
+        f"**Total vuelos:** {flight_total:.2f}€",
         "",
-        "### Día a día:",
-        *day_lines,
+        "### 🏨 ALOJAMIENTO",
+        hotel_block,
         "",
-        "---",
-        f"**Coste total**: {total_cost:.2f}€",
-        f"- Vuelos: {flight_total:.2f}€",
-        f"- Hotel ({nights} noches): {hotel_total:.2f}€",
-        f"- Actividades: {activities_total:.2f}€",
+        "### 🗓️ ITINERARIO DÍA A DÍA",
+        *day_sections,
+        "",
+        "### 💰 RESUMEN ECONÓMICO",
+        "| Concepto | Coste |",
+        "|----------|-------|",
+        f"| Vuelos | {flight_total:.2f}€ |",
+        f"| Alojamiento ({nights} noches) | {hotel_total:.2f}€ |",
+        f"| Actividades | {activities_total:.2f}€ |",
+        f"| **TOTAL** | **{total_cost:.2f}€** |",
+        budget_row,
+        diff_row,
+        id_block,
     ]
 
     if budget_warning:
-        draft_sections.extend(["", f"Nota: {budget_warning}"])
+        draft_sections.extend(["", f"> ⚠️ {budget_warning}"])
     if warnings:
-        draft_sections.extend(["", "Avisos: " + " | ".join(warnings)])
+        draft_sections.extend(["", "> ℹ️ " + " | ".join(warnings)])
+
+    draft_sections.append("\n---\n**¿Quieres ajustar algo?** (o escribe \"confirmar\" para proceder)")
 
     return {
-        "draft": "\n".join(draft_sections),
+        "draft": "\n".join(s for s in draft_sections if s is not None),
         "total_cost": total_cost,
         "status": state.get("status", "draft"),
         "days": days,
