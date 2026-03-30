@@ -4,8 +4,6 @@ import os
 from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-
-from auth import SimpleOAuthProvider
 from agent import (
     confirm_itinerary_state,
     get_itinerary_state,
@@ -14,8 +12,7 @@ from agent import (
     run_refine,
 )
 
-oauth = SimpleOAuthProvider()
-mcp = FastMCP("travel-agent", auth=oauth)
+mcp = FastMCP("travel-agent")
 
 
 @mcp.custom_route("/health", methods=["GET"])
