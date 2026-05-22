@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "travel-agent": {
-      "url": "https://travel-agent-production-c1c4.up.railway.app/mcp"
+      "url": "https://<your-railway-url>/mcp"
     }
   }
 }
